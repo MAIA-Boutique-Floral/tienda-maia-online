@@ -796,7 +796,7 @@ footer a{color:var(--rosa);text-decoration:none}
 // ══════════════════════════════════════════════════════════════════
 // URL DE APPS SCRIPT — CAMBIA ESTA URL CADA VEZ QUE REPUBLIQUES
 // ══════════════════════════════════════════════════════════════════
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx8uCe-Csw0XY91TK1ycKhq21gA6rZRL0plARUMns3d-2mcCLV13BkmhAgULgO5bJUc/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOKTLeFqNMQIuawb4lUwlpwotTbNdV35uLam4yNd67F1lUvxlZIRmLQxT7TpmYzMS5/exec';
 // ══════════════════════════════════════════════════════════════════
 var PRODUCTOS        = [];
 var CATEGORIAS       = [];
@@ -1750,7 +1750,6 @@ function confirmarPedido() {
     dedicatoria:  datos.dedicatoria || '',
     distanciaKm:  datos.distanciaKm || '',
     enviosPorProducto: JSON.stringify(datos.enviosPorProducto || [])
-  };
   };
   fetch(APPS_SCRIPT_URL, {
     method: 'POST',
