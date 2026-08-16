@@ -1682,10 +1682,12 @@ function confirmarPedido() {
     cp:ep0.cp||'', estado:ep0.estado||'', municipio:ep0.municipio||'',
     colonia:ep0.colonia||'', calle:ep0.calle||'',
     noExt:ep0.ext||'', noInt:ep0.int||'',
-    referencias:ep0.referencias||'',
-    dirEnvio:ep0.dirEnvio||'', linkMaps:ep0.linkMaps||'',
-    nombreRecibe:ep0.nombre||'', telRecibe:ep0.tel||'',
-    fechaEntrega:ep0.fecha||v('ch-fecha-entrega'),
+    referencias: enviosProd.map(function(ep){return ep.referencias;}).filter(Boolean).join(' | '),
+    dirEnvio: enviosProd.map(function(ep){return ep.dirEnvio;}).filter(Boolean).join(' | '),
+    linkMaps: enviosProd.map(function(ep){return ep.linkMaps;}).filter(Boolean).join(' | '),
+    nombreRecibe: enviosProd.map(function(ep){return ep.nombre;}).filter(Boolean).join(' | '),
+    telRecibe: enviosProd.map(function(ep){return ep.tel;}).filter(Boolean).join(' | '),
+    fechaEntrega: enviosProd.map(function(ep){return ep.fecha;}).filter(Boolean).join(' | ') || v('ch-fecha-entrega'),
     dedicatoria:enviosProd.map(function(ep){return ep.dedicatoria;}).filter(Boolean).join(' | '),
     distanciaKm:'',
     tipoPago:tipoPagoSel, recogerEnTienda:recogerEnTienda,
@@ -1727,13 +1729,28 @@ function confirmarPedido() {
     telefono:     datos.telefono,
     email:        datos.email,
     tipoPago:     datos.tipoPago,
-    recoger:      datos.recogerEnTienda,
-    idPedido:     idPedidoGH,
+    recogerEnTienda: datos.recogerEnTienda,
+    tienePersonalizado: datos.tienePersonalizado,
+    _folioLocal:  idPedidoGH,
     notas:        'Pedido desde GitHub Tienda MAIA',
     carrito:      JSON.stringify(datos.carrito),
+    cp:           datos.cp || '',
+    estado:       datos.estado || '',
+    municipio:    datos.municipio || '',
+    colonia:      datos.colonia || '',
+    calle:        datos.calle || '',
+    noExt:        datos.noExt || '',
+    noInt:        datos.noInt || '',
+    referencias:  datos.referencias || '',
     dirEnvio:     datos.dirEnvio    || '',
+    linkMaps:     datos.linkMaps   || '',
+    nombreRecibe: datos.nombreRecibe|| '',
+    telRecibe:    datos.telRecibe  || '',
+    fechaEntrega: datos.fechaEntrega|| '',
     dedicatoria:  datos.dedicatoria || '',
-    fechaEntrega: datos.fechaEntrega|| ''
+    distanciaKm:  datos.distanciaKm || '',
+    enviosPorProducto: JSON.stringify(datos.enviosPorProducto || [])
+  };
   };
   fetch(APPS_SCRIPT_URL, {
     method: 'POST',
@@ -1867,4 +1884,5 @@ function cerrarAviso() { document.getElementById('modal-aviso').classList.remove
 </script>
 </body>
 </html>
+
 
