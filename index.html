@@ -1210,12 +1210,18 @@ function filtrarSubcat(btn, catIdx, sub) {
     card.style.display = (!sub||sub==='Todas'||card.dataset.cat===sub) ? '' : 'none';
   });
 }
+function ultimoIndicePorProducto(id) {
+  for (var i = carrito.length - 1; i >= 0; i--) {
+    if (carrito[i]._prodId == id) return i;
+  }
+  return -1;
+}
 function changeQty(id, delta) {
   var el = document.getElementById('qty-'+id); if(!el) return;
   var curr = parseInt(el.textContent) || 1;
   var nuevo = Math.max(1, curr + delta);
   el.textContent = nuevo;
-  var idx = carrito.findIndex(function(it){ return it._prodId == id; });
+  var idx = ultimoIndicePorProducto(id);
   if (idx >= 0) {
     var p = PRODUCTOS.find(function(pr){ return pr.id == id; });
     carrito[idx].cantidad = nuevo;
@@ -1227,9 +1233,9 @@ function changeQty(id, delta) {
 function quitarProd(id) {
   var qEl = document.getElementById('qty-'+id); if (!qEl) return;
   var qty = parseInt(qEl.textContent) || 1;
+  var idx = ultimoIndicePorProducto(id);
   if (qty > 1) {
     qEl.textContent = qty - 1;
-    var idx = carrito.findIndex(function(it){ return it._prodId == id; });
     if (idx >= 0) {
       var p = PRODUCTOS.find(function(pr){ return pr.id == id; });
       carrito[idx].cantidad = qty - 1;
@@ -1239,10 +1245,12 @@ function quitarProd(id) {
     }
     return;
   }
-  var card = document.getElementById('prodcard-'+id);
-  if (card) card.classList.remove('confirmado');
+  if (idx >= 0) { carrito.splice(idx, 1); }
+  if (ultimoIndicePorProducto(id) < 0) {
+    var card = document.getElementById('prodcard-'+id);
+    if (card) card.classList.remove('confirmado');
+  }
   qEl.textContent = '1';
-  carrito = carrito.filter(function(it){ return !(it._prodId == id); });
   renderCarrito();
 }
 function confirmarProd(id, catNombre, numOpc, opcionesStr) {
@@ -1256,8 +1264,9 @@ function confirmarProd(id, catNombre, numOpc, opcionesStr) {
       if (el && el.value.trim()) opcsElegidas.push(opt+': '+el.value.trim());
     });
   }
-  var existe = carrito.findIndex(function(it){ return it._prodId == id; });
-  // Cambio 3: incluir datos de descuento en el ítem del carrito
+  // Cada confirmación agrega una línea NUEVA al carrito (nunca sobrescribe),
+  // para poder pedir el mismo producto varias veces con distinto destinatario,
+  // dirección y dedicatoria en el paso de envío por producto.
   var precioFinal = (p.tieneDescuento && p.precioConDesc > 0) ? p.precioConDesc : p.precio;
   var item = { _prodId:id, tipo:catNombre, descripcion:p.descripcion,
     precio: precioFinal>0 ? precioFinal*qty : 0,
@@ -1266,9 +1275,10 @@ function confirmarProd(id, catNombre, numOpc, opcionesStr) {
     precioConDesc: p.precioConDesc || 0,
     cantidad:qty,
     imagen:p.imagen, personalizacion:null, opcionesElegidas:opcsElegidas };
-  if (existe >= 0) carrito[existe] = item; else carrito.push(item);
+  carrito.push(item);
   var card = document.getElementById('prodcard-'+id);
   if (card) card.classList.add('confirmado');
+  document.getElementById('qty-'+id).textContent = '1';
   renderCarrito();
   showToast('✅ '+p.descripcion+' agregado (x'+qty+')');
 }
@@ -1340,7 +1350,7 @@ function renderCarrito() {
 }
 function removeCarrito(idx) {
   var item = carrito[idx]; carrito.splice(idx,1);
-  if (item && item._prodId) {
+  if (item && item._prodId && ultimoIndicePorProducto(item._prodId) < 0) {
     var card = document.getElementById('prodcard-'+item._prodId);
     if (card) card.classList.remove('confirmado');
   }
