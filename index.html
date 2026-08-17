@@ -1659,6 +1659,9 @@ function confirmarPedido() {
   var email    = v('ch-email');
   if(!nombre)    { showToast('⚠️ Ingresa tu nombre completo',true); return; }
   if(!telefono)  { showToast('⚠️ Ingresa tu teléfono',true); return; }
+  var telDigits = telefono.replace(/\D/g,'');
+  if(telDigits.length !== 10) { showToast('⚠️ El teléfono debe tener 10 dígitos',true); return; }
+  telefono = telDigits;
   if(!email)     { showToast('⚠️ Ingresa tu correo electrónico',true); return; }
   if(!recogerEnTienda) {
     for (var vi=0; vi<carrito.length; vi++) {
