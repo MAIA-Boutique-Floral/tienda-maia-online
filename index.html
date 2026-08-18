@@ -1221,36 +1221,17 @@ function changeQty(id, delta) {
   var curr = parseInt(el.textContent) || 1;
   var nuevo = Math.max(1, curr + delta);
   el.textContent = nuevo;
-  var idx = ultimoIndicePorProducto(id);
-  if (idx >= 0) {
-    var p = PRODUCTOS.find(function(pr){ return pr.id == id; });
-    carrito[idx].cantidad = nuevo;
-    var pFinal = (p && p.tieneDescuento && p.precioConDesc > 0) ? p.precioConDesc : (p ? p.precio : 0);
-    carrito[idx].precio   = pFinal > 0 ? pFinal * nuevo : 0;
-    renderCarrito();
-  }
 }
 function quitarProd(id) {
-  var qEl = document.getElementById('qty-'+id); if (!qEl) return;
-  var qty = parseInt(qEl.textContent) || 1;
   var idx = ultimoIndicePorProducto(id);
-  if (qty > 1) {
-    qEl.textContent = qty - 1;
-    if (idx >= 0) {
-      var p = PRODUCTOS.find(function(pr){ return pr.id == id; });
-      carrito[idx].cantidad = qty - 1;
-      var pFinalQ = (p && p.tieneDescuento && p.precioConDesc > 0) ? p.precioConDesc : (p ? p.precio : 0);
-      carrito[idx].precio   = pFinalQ > 0 ? pFinalQ * (qty - 1) : 0;
-      renderCarrito();
-    }
-    return;
-  }
-  if (idx >= 0) { carrito.splice(idx, 1); }
+  if (idx < 0) return;
+  carrito.splice(idx, 1);
   if (ultimoIndicePorProducto(id) < 0) {
     var card = document.getElementById('prodcard-'+id);
     if (card) card.classList.remove('confirmado');
+    var qEl = document.getElementById('qty-'+id);
+    if (qEl) qEl.textContent = '1';
   }
-  qEl.textContent = '1';
   renderCarrito();
 }
 function confirmarProd(id, catNombre, numOpc, opcionesStr) {
@@ -1264,18 +1245,20 @@ function confirmarProd(id, catNombre, numOpc, opcionesStr) {
       if (el && el.value.trim()) opcsElegidas.push(opt+': '+el.value.trim());
     });
   }
-  // Cada confirmación agrega una línea NUEVA al carrito (nunca sobrescribe),
-  // para poder pedir el mismo producto varias veces con distinto destinatario,
-  // dirección y dedicatoria en el paso de envío por producto.
+  // Cada UNIDAD se agrega como línea independiente del carrito (nunca se agrupan
+  // en una sola con cantidad>1), para que en 'Datos de envío por producto' se
+  // pueda capturar un destinatario, dirección y dedicatoria distintos por cada
+  // unidad, aunque sea el mismo producto pedido varias veces.
   var precioFinal = (p.tieneDescuento && p.precioConDesc > 0) ? p.precioConDesc : p.precio;
-  var item = { _prodId:id, tipo:catNombre, descripcion:p.descripcion,
-    precio: precioFinal>0 ? precioFinal*qty : 0,
-    precioUnit: precioFinal, precioOriginal: p.precio,
-    tieneDescuento: p.tieneDescuento || false,
-    precioConDesc: p.precioConDesc || 0,
-    cantidad:qty,
-    imagen:p.imagen, personalizacion:null, opcionesElegidas:opcsElegidas };
-  carrito.push(item);
+  for (var k = 0; k < qty; k++) {
+    carrito.push({ _prodId:id, tipo:catNombre, descripcion:p.descripcion,
+      precio: precioFinal>0 ? precioFinal : 0,
+      precioUnit: precioFinal, precioOriginal: p.precio,
+      tieneDescuento: p.tieneDescuento || false,
+      precioConDesc: p.precioConDesc || 0,
+      cantidad:1,
+      imagen:p.imagen, personalizacion:null, opcionesElegidas:opcsElegidas.slice() });
+  }
   var card = document.getElementById('prodcard-'+id);
   if (card) card.classList.add('confirmado');
   document.getElementById('qty-'+id).textContent = '1';
